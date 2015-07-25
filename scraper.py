@@ -17,9 +17,9 @@ def get_garden_data(garden_url):
    print root_url + garden_url
    response = requests.get(root_url + garden_url)
    soup = bs(response.text, 'html.parser')
-   garden_data['name'] = soup.select('h1.pageTitle span')[0].get_text()
+   garden_data['name'] = soup.select('h1.pageTitle span')[0].get_text().strip()
    garden_data['features'] = [a.get_text() for a in soup.select('ul.features li')]
-   garden_data['address'] = re.sub('Address: ', '', soup.select('div.Address')[0].get_text())
+   garden_data['address'] = re.sub('Address: ', '', soup.select('div.Address')[0].get_text().strip())
    if soup.has_attr('div.Numberofplots'):
       garden_data['num_of_plots'] = re.sub('Number Of Plots: ', '', soup.select('div.Numberofplots')[0].get_text())
    if soup.has_attr('div.Established'):
@@ -28,7 +28,8 @@ def get_garden_data(garden_url):
       garden_data['size'] = re.sub('Size: ', '', soup.select('div.size')[0].get_text())
    if soup.has_attr('div.waitTime'):
       garden_data['wait_time'] = re.sub('Wait Time: ', '', soup.select('div.waitTime')[0].get_text())
-   garden_data['description'] = soup.select('div.span')[0].get_text()
+   garden_data['description'] = soup.select('div.span')[0].get_text().strip()
+   garden_data['url'] = root_url + garden_url
    return garden_data
 
 def show_garden_stats():
@@ -38,7 +39,8 @@ def show_garden_stats():
       sleep(1)
       garden_data = get_garden_data(garden_url)
       data[garden_data['name']] = garden_data
-   out_file = open("gardens.txt", "w") 
+      break
+   out_file = open("gardens.json", "w") 
    json_data = json.dumps(data, indent=3)
    out_file.write(json_data)
    out_file.close()
