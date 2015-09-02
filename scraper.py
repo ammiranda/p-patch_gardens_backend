@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup as bs
 import re
 from time import sleep
 import json
+import uuid
 
 root_url = 'http://www.seattle.gov/'
 index_url = root_url + 'neighborhoods/p-patch-community-gardening/p-patch-list'
@@ -30,16 +31,15 @@ def get_garden_data(garden_url):
       garden_data['wait_time'] = re.sub('Wait Time: ', '', soup.select('div.waitTime')[0].get_text())
    garden_data['description'] = soup.select('div.span')[0].get_text().strip()
    garden_data['url'] = root_url + garden_url
+   garden_data['id'] = str(uuid.uuid4())
    return garden_data
 
 def show_garden_stats():
-   data = {}
+   data = []
    garden_urls = get_garden_urls()
    for garden_url in garden_urls:
-      sleep(1)
       garden_data = get_garden_data(garden_url)
-      data[garden_data['name']] = garden_data
-      break
+      data.append(garden_data)
    out_file = open("gardens.json", "w") 
    json_data = json.dumps(data, indent=3)
    out_file.write(json_data)
