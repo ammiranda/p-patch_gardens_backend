@@ -1,10 +1,9 @@
 import requests
 from bs4 import BeautifulSoup as bs
 import re
-from time import sleep
 import json
 from difflib import SequenceMatcher
-import uuid
+from db_session import session
 
 root_url = 'http://www.seattle.gov/'
 index_url = root_url + 'neighborhoods/p-patch-community-gardening/p-patch-list'
@@ -20,7 +19,7 @@ def get_garden_data(garden_url):
    print root_url + garden_url
    response = requests.get(root_url + garden_url)
    soup = bs(response.text, 'html.parser')
-   garden_data['name'] = soup.select('h1.pageTitle span')[0].get_text().strip()
+   garden_data['name'] = soup.select('h1.pageTitle')[0].get_text().strip()
    garden_data['features'] = [a.get_text() for a in soup.select('ul.features li')]
    garden_data['address'] = re.sub('Address:  ', '', soup.select('div.Address')[0].get_text().strip())
    if soup.has_attr('div.Numberofplots'):
@@ -33,7 +32,6 @@ def get_garden_data(garden_url):
       garden_data['wait_time'] = re.sub('Wait Time: ', '', soup.select('div.waitTime')[0].get_text())
    garden_data['description'] = soup.select('div.span')[0].get_text().strip()
    garden_data['url'] = root_url + garden_url
-   garden_data['id'] = str(uuid.uuid4())
    return garden_data
 
 def add_geocode(garden):
@@ -75,6 +73,7 @@ def show_garden_stats():
    scraped_data = create_scraped_data_array()
    garden_urls = get_garden_urls()
    socrata_data = get_socrata_garden_data()
+   print "%d : %d" % (len(scraped_data), len(socrata_data))
    gardens_w_geo = append_geo_data(socrata_data, scraped_data)
    out_file = open("gardens.json", "w") 
    json_data = json.dumps(gardens_w_geo, indent=3)
