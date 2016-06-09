@@ -16,7 +16,7 @@ def get_garden_urls():
 
 def get_garden_data(garden_url):
    garden_data = {}
-   print root_url + garden_url
+   print(root_url + garden_url)
    response = requests.get(root_url + garden_url)
    soup = bs(response.text, 'html.parser')
    garden_data['name'] = soup.select('h1.pageTitle')[0].get_text().strip()
@@ -40,12 +40,12 @@ def add_geocode(garden):
    geo_data = json.loads(requests.get(url_root).content)
    garden['lat'] = geo_data['results'][0]['geometry']['location']['lat']
    garden['formatted_address'] = geo_data['results'][0]['formatted_address']
-   print garden['name']
+   print(garden['name'])
    garden['lng'] = geo_data['results'][0]['geometry']['location']['lng']
 
 def get_socrata_garden_data():
    soda_url = 'https://data.seattle.gov/resource/wejr-a88w.json'
-   return json.loads(requests.get(soda_url).content)
+   return json.loads(requests.get(soda_url).content.decode('utf8'))
 
 def append_geo_data(socrata_data, scraped_data):
    data = []
@@ -73,7 +73,7 @@ def show_garden_stats():
    scraped_data = create_scraped_data_array()
    garden_urls = get_garden_urls()
    socrata_data = get_socrata_garden_data()
-   print "%d : %d" % (len(scraped_data), len(socrata_data))
+   print("%d : %d" % (len(scraped_data), len(socrata_data)))
    gardens_w_geo = append_geo_data(socrata_data, scraped_data)
    out_file = open("gardens.json", "w") 
    json_data = json.dumps(gardens_w_geo, indent=3)
