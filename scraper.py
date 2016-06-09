@@ -80,4 +80,5 @@ def show_garden_stats():
    out_file.write(json_data)
    out_file.close()
 
-show_garden_stats()
+if __name__ == "__main__":
+   show_garden_stats()
