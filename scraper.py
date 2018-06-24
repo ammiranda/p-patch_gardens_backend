@@ -3,7 +3,6 @@ from bs4 import BeautifulSoup as bs
 import re
 import json
 from difflib import SequenceMatcher
-from db_session import session
 
 root_url = 'http://www.seattle.gov/'
 index_url = root_url + 'neighborhoods/p-patch-community-gardening/p-patch-list'
@@ -44,22 +43,16 @@ def add_geocode(garden):
    garden['lng'] = geo_data['results'][0]['geometry']['location']['lng']
 
 def get_socrata_garden_data():
-   soda_url = 'https://data.seattle.gov/resource/wejr-a88w.json'
+   soda_url = 'http://www.seattle.gov/p-patch-geo-json'
    return json.loads(requests.get(soda_url).content.decode('utf8'))
 
 def append_geo_data(socrata_data, scraped_data):
-   data = []
-   for soda_garden in socrata_data:
-      soda_name = soda_garden['common_name']
-      for scraped_garden in scraped_data:
-         scraped_name = scraped_garden['name']
-         match_ratio = SequenceMatcher(None, scraped_name, soda_name).ratio()
-         if match_ratio >= 0.90:
-            scraped_garden['lat'] = soda_garden['latitude']
-            scraped_garden['lng'] = soda_garden['longitude']
-            data.append(scraped_garden)
-            continue
-   return data
+    for i in range(0, len(scraped_data)):
+        name = scraped_data[i]['name']
+        for k in range(0, len(socrata_data['features'])):
+            if socrata_data['features'][k]['properties']['Name'] == name:
+                socrata_data['features'][k]['properties'].update(scraped_data[i])
+    return socrata_data
 
 def create_scraped_data_array():
    data = []
